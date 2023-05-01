@@ -1,0 +1,34 @@
+// Provides a way for users to create and manage API keys. API keys allow 
+// authorization to BlockJoy's public API. Keys are one-way meaning they are 
+// hashed with salt and can not be re-read by the user after creation. API 
+// keys can be labeled by the user and offer optional scope based restrictions 
+// limiting access to a specific Organization, Host, or Node.
+syntax = "proto3";
+
+package v1;ApiKey
+
+import "google/protobuf/timestamp.proto";
+
+enum Resource {
+    RESOURCE_UNSPECIFIED = 0; 
+    RESOURCE_ORG = 1;
+    RESOURCE_HOST = 2;
+    RESOURCE_NODE = 3;
+}
+
+message Scope {
+    Resource resource = 1;
+    string resource_id = 0;
+}
+
+message CreateApiKeyRequest {
+}
+
+message CreateApiKeyResponse {
+    
+}
+
+
+service ApiKeyService {
+    rpc CreateApiKey(CreateApiKeyRequest) return (CreateApiKeyResponse);	 
+}
