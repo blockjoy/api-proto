@@ -3,6 +3,8 @@ syntax = "proto3";
 package blockjoy.v1;
 
 import "google/protobuf/timestamp.proto";
+
+
 // A Host is a physical (bare metal) server that is provisioned to run Nodes.
 // [Example]{
 //     "id": "c67f154e-3288-40d7-9622-e41094d83ffa",
@@ -23,7 +25,6 @@ import "google/protobuf/timestamp.proto";
 //     "ip_gateway": "192.168.1.1",
 //     "org_id": "f24b61a5-f80b-4e69-b4c8-028c66323153"
 // }
-
 message Host {
   // This is the id of the host.
   string id = 1;
