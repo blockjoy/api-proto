@@ -3,6 +3,26 @@ syntax = "proto3";
 package blockjoy.v1;
 
 import "google/protobuf/timestamp.proto";
+// A Host is a physical (bare metal) server that is provisioned to run Nodes.
+// [Example]{
+//     "id": "c67f154e-3288-40d7-9622-e41094d83ffa",
+//     "name": "fair-robin-blue",
+//     "version": "1.0", 
+//     "cpu_count": 64,
+//     "mem_size_bytes": 64000000000,
+//     "disk_size_bytes": 4000000000000,
+//     "os": "Linux"
+//     "os_version": "3.6.9",
+//     "ip": "192.168.2.133",
+//     "status": {
+
+//     },
+//     "created_at": "2023-06-06T12:41:57.317Z",
+//     "ip_range_from": "192.168.1.2",
+//     "ip_range_to": "192.168.1.99",
+//     "ip_gateway": "192.168.1.1",
+//     "org_id": "f24b61a5-f80b-4e69-b4c8-028c66323153"
+// }
 
 message Host {
   // This is the id of the host.
