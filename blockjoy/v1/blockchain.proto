@@ -20,11 +20,65 @@ message Blockchain {
 
 // Blockchain related service.
 service BlockchainService {
+  // Create a new blockchain.
+  rpc Create(BlockchainServiceCreateRequest) returns
+    (BlockchainServiceCreateResponse);
+  rpc CreateNodeType(BlockchainServiceCreateNodeTypeRequest) returns
+    (BlockchainServiceCreateNodeTypeResponse);
+  rpc CreateVersion(BlockchainServiceCreateVersionRequest) returns
+    (BlockchainServiceCreateVersionResponse);
+  rpc CreateProperty(BlockchainServiceCreatePropertyRequest) returns
+    (BlockchainServiceCreatePropertyResponse);
   // Returns a single blockchain as identified by its id.
   rpc Get(BlockchainServiceGetRequest) returns (BlockchainServiceGetResponse);
   // Returns a list of all blockchains.
   rpc List(BlockchainServiceListRequest) returns
     (BlockchainServiceListResponse);
+}
+
+message BlockchainServiceCreateRequest {
+  string name = 1;
+  optional string description = 2;
+  optional string project_url = 3;
+  optional string repo_url = 4;
+}
+
+message BlockchainServiceCreateResponse {
+  Blockchain blockchain = 1;
+}
+
+message BlockchainServiceCreateNodeTypeRequest {
+  string blockchain_id = 1;
+  NodeType node_type = 2;
+  optional string description = 3;
+}
+
+message BlockchainServiceCreateNodeTypeResponse {
+  BlockchainNodeType node_type = 1;
+}
+
+message BlockchainServiceCreateVersionRequest {
+  string blockchain_node_type_id = 1;
+  string version = 2;
+  optional string description = 3;
+  string rhai_script = 4;
+}
+
+message BlockchainServiceCreateVersionResponse {
+  BlockchainVersion version = 1;
+}
+
+message BlockchainServiceCreatePropertyRequest {
+  string blockchain_version_id = 1;
+  string name = 2;
+  string display_name = 3;
+  optional string default = 4;
+  UiType ui_type = 5;
+  bool required = 6;
+}
+
+message BlockchainServiceCreatePropertyResponse {
+  BlockchainProperty property = 1;
 }
 
 message BlockchainServiceGetRequest {
