@@ -2,48 +2,30 @@ syntax = "proto3";
 
 package blockjoy.v1;
 
-import "blockjoy/common/v1/image.proto";
-
 // Manage blockchain data archives.
-service BlockchainArchiveService {
+service ArchiveService {
   // Get the download manifest for a specific image and blockchain network.
-  rpc HasBlockchainArchive(BlockchainArchiveServiceHasBlockchainArchiveRequest) returns (BlockchainArchiveServiceHasBlockchainArchiveResponse);
-  // Get the download manifest for a specific image and blockchain network.
-  rpc GetDownloadManifest(BlockchainArchiveServiceGetDownloadManifestRequest) returns (BlockchainArchiveServiceGetDownloadManifestResponse);
+  rpc GetDownloadManifest(ArchiveServiceGetDownloadManifestRequest) returns (ArchiveServiceGetDownloadManifestResponse);
   // Get an upload manifest for a specific image and blockchain network.
-  rpc GetUploadManifest(BlockchainArchiveServiceGetUploadManifestRequest) returns (BlockchainArchiveServiceGetUploadManifestResponse);
+  rpc GetUploadManifest(ArchiveServiceGetUploadManifestRequest) returns (ArchiveServiceGetUploadManifestResponse);
+  // Check if the blockchain archive exists.
+  rpc HasBlockchainArchive(ArchiveServiceHasBlockchainArchiveRequest) returns (ArchiveServiceHasBlockchainArchiveResponse);
   // Put a new download manifest for retrieval with `GetDownloadManifest`.
-  rpc PutDownloadManifest(BlockchainArchiveServicePutDownloadManifestRequest) returns (BlockchainArchiveServicePutDownloadManifestResponse);
+  rpc PutDownloadManifest(ArchiveServicePutDownloadManifestRequest) returns (ArchiveServicePutDownloadManifestResponse);
 }
 
-message BlockchainArchiveServiceHasBlockchainArchiveRequest {
-  // The archive image identifier.
-  blockjoy.common.v1.ImageIdentifier id = 1;
-  // The network name (e.g. "main", "testnet").
-  string network = 2;
+message ArchiveServiceGetDownloadManifestRequest {
+  string archive_id = 1;
+  optional string org_id = 2;
 }
 
-message BlockchainArchiveServiceHasBlockchainArchiveResponse {
-  bool available = 1;
-}
-
-message BlockchainArchiveServiceGetDownloadManifestRequest {
-  // The archive image identifier.
-  blockjoy.common.v1.ImageIdentifier id = 1;
-  // The network name (e.g. "main", "testnet").
-  string network = 2;
-}
-
-message BlockchainArchiveServiceGetDownloadManifestResponse {
+message ArchiveServiceGetDownloadManifestResponse {
   DownloadManifest manifest = 1;
 }
 
-// Pre-signed upload URL slots for the blockchain archive data chunks.
-message BlockchainArchiveServiceGetUploadManifestRequest {
-  // The archive image identifier.
-  blockjoy.common.v1.ImageIdentifier id = 1;
-  // The network name (e.g. "main", "testnet").
-  string network = 2;
+message ArchiveServiceGetUploadManifestRequest {
+  string archive_id = 1;
+  optional string org_id = 2;
   // The data version. If not set, will increment the last data version.
   optional uint64 data_version = 3;
   // Requested number of upload URL slots.
@@ -52,20 +34,26 @@ message BlockchainArchiveServiceGetUploadManifestRequest {
   optional uint32 url_expires = 5;
 }
 
-message BlockchainArchiveServiceGetUploadManifestResponse {
+message ArchiveServiceGetUploadManifestResponse {
   UploadManifest manifest = 1;
 }
 
-message BlockchainArchiveServicePutDownloadManifestRequest {
-  // The archive image identifier.
-  blockjoy.common.v1.ImageIdentifier id = 1;
-  // The network name (e.g. "main", "testnet").
-  string network = 2;
-  // The download manifest to store.
+message ArchiveServicePutDownloadManifestRequest {
+  string archive_id = 1;
+  optional string org_id = 2;
   DownloadManifest manifest = 3;
 }
 
-message BlockchainArchiveServicePutDownloadManifestResponse {}
+message ArchiveServiceHasBlockchainArchiveRequest {
+  string archive_id = 1;
+  optional string org_id = 2;
+}
+
+message ArchiveServiceHasBlockchainArchiveResponse {
+  bool available = 1;
+}
+
+message ArchiveServicePutDownloadManifestResponse {}
 
 // Download manifest with metadata and pointers to archive data chunks.
 message DownloadManifest {
