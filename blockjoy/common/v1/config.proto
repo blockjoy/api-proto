@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package blockjoy.common.v1;
+
+// The top-level message encapsulating all node config.
+message NodeConfig {
+  VmConfig vm = 1;
+  ImageConfig image = 2;
+  FirewallConfig firewall = 3;
+}
+
+// The configuration of the VM.
+message VmConfig {
+  // Number of CPU cores.
+  uint64 cpu_count = 1;
+  // Memory allocated to the VM (in bytes).
+  uint64 mem_size_bytes = 2;
+  // Disk allocated to the VM (in bytes).
+  uint64 disk_size_bytes = 3;
+  // A list of ramdisks attached to the VM.
+  repeated RamdiskConfig ramdisks = 4;
+}
+
+// The configuration of a VM ramdisk.
+message RamdiskConfig {
+  // The mount point of the ramdisk on a VM.
+  string mount = 1;
+  // The size of the ramdisk (in bytes).
+  uint64 size_bytes = 2;
+}
+
+// The configuration of the image.
+message ImageConfig {
+  // An identifier to where the image is stored.
+  string image_uri = 1;
+  // The archive id used to retrieve archive data.
+  string archive_id = 2;
+  // The image properties changed from their default values.
+  repeated ImagePropertyValue changes = 3;
+}
+
+// A configured image property.
+message ImagePropertyValue {
+  // The key of the image property.
+  string key = 1;
+  // The configured value of the image property.
+  string value = 2;
+}
+
+// The firewall config of a node.
+message FirewallConfig {
+  // Fallback action for inbound traffic not matching any rule.
+  FirewallAction default_in = 1;
+  // Fallback action for outbound traffic not matching any rule.
+  FirewallAction default_out = 2;
+  // Set of firewall rules to be applied.
+  repeated FirewallRule rules = 3;
+}
+
+// A single firewall rule.
+message FirewallRule {
+  // The lookup key of this firewall rule.
+  string key = 1;
+  // A user-readable description of this rule.
+  optional string description = 2;
+  // The protocol type of packets.
+  FirewallProtocol protocol = 3;
+  // The direction of traffic for which this rule applies.
+  FirewallDirection direction = 4;
+  // Action applied on packets that match this rule.
+  FirewallAction action = 5;
+  // Applicable IPs (or empty for all).
+  repeated IpName ips = 6;
+  // Applicable ports (or empty for all).
+  repeated PortName ports = 7;
+}
+
+// An IP address or range with an optional description.
+message IpName {
+  // The ip address (in CIDR notation).
+  string ip = 1;
+  // A user-readable description of this address.
+  optional string name = 2;
+}
+
+// A port number with an optional description.
+message PortName {
+  // The port (in u16).
+  uint32 port = 1;
+  // A user-readable description of this port.
+  optional string name = 2;
+}
+
+// The packet protocol type for firewall rules.
+enum FirewallProtocol {
+  FIREWALL_PROTOCOL_UNSPECIFIED = 0;
+  FIREWALL_PROTOCOL_TCP = 1;
+  FIREWALL_PROTOCOL_UDP = 2;
+  FIREWALL_PROTOCOL_BOTH = 3;
+}
+
+// The direction of packets for firewall rules.
+enum FirewallDirection {
+  FIREWALL_DIRECTION_UNSPECIFIED = 0;
+  FIREWALL_DIRECTION_INBOUND = 1;
+  FIREWALL_DIRECTION_OUTBOUND = 2;
+}
+
+// The firewall action to apply to matching packets.
+enum FirewallAction {
+  FIREWALL_ACTION_UNSPECIFIED = 0;
+  // Allow matching packets.
+  FIREWALL_ACTION_ALLOW = 1;
+  // Drop matching packets without a response.
+  FIREWALL_ACTION_DROP = 2;
+  // Reject matching packets with a response.
+  FIREWALL_ACTION_REJECT = 3;
+}

@@ -8,32 +8,26 @@ import "google/protobuf/timestamp.proto";
 // An invitation for a user to some organization.
 message Invitation {
   // A uuid that uniquely determines the invitation.
-  string id = 1;
-  // The id of the organization the invitee is being invited to.
+  string invitation_id = 1;
+  // The org id that the user is being invited to.
   string org_id = 2;
-  // This is the name of the organization that this invitation has been created
-  // for.
+  // The org name this invitation has been created for.
   string org_name = 3;
-  // The id of the person that is being invited here. Note that this is not the
-  // uuid of some user, because the person that is being invited might not have
-  // an account (yet).
+  // The email of the person being invited.
   string invitee_email = 4;
-  // The status of the invitation, indicating what user action has been taken
-  // with this invitation.
+  // The current status of the invitation.
   InvitationStatus status = 5;
   // The resource that created this invitation.
   blockjoy.common.v1.EntityUpdate invited_by = 6;
   // The timestamp when this invitation was created.
   google.protobuf.Timestamp created_at = 7;
-  // If this invitation has been accepted, this field is set to the moment of
-  // acceptance.
+  // When this invitation was accepted.
   optional google.protobuf.Timestamp accepted_at = 9;
-  // If this invitation has been declined, this field is set to the moment of
-  // declination.
+  // When this invitation was declined.
   optional google.protobuf.Timestamp declined_at = 10;
 }
 
-// Manage invitations
+// Service to manage invitations
 service InvitationService {
   // Invite a user into an organization.
   rpc Create(InvitationServiceCreateRequest) returns (InvitationServiceCreateResponse);
@@ -50,24 +44,19 @@ service InvitationService {
 // The status of an invitation.
 enum InvitationStatus {
   INVITATION_STATUS_UNSPECIFIED = 0;
-  // This invitation has not been used yet. The user may still accept or decline
-  // it.
+  // The invitation has not yet been accepted or declined.
   INVITATION_STATUS_OPEN = 1;
-  // This invitation has been accepted. The user is now a member of the
-  // specified organization and this invitation is not useful anymore.
+  // The invitation has been accepted.
   INVITATION_STATUS_ACCEPTED = 2;
-  // This invitation has been declined. This means that the user can no longer
-  // use this invitation anymore to join the organization.
+  // The invitation has been declined.
   INVITATION_STATUS_DECLINED = 3;
 }
 
-// Use this message to create a new invitation.
+// Create a new invitation.
 message InvitationServiceCreateRequest {
-  // The id of the person that is being invited here. Note that this is not the
-  // uuid of some user, because the person that is being invited might not have
-  // an account (yet).
+  // The email of the person being invited.
   string invitee_email = 1;
-  // The id of the organization that the user is being invited to.
+  // The org id that the user is being invited to.
   string org_id = 2;
 }
 

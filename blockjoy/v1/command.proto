@@ -2,14 +2,13 @@ syntax = "proto3";
 
 package blockjoy.v1;
 
-import "blockjoy/common/v1/firewall.proto";
-import "blockjoy/common/v1/image.proto";
-import "blockjoy/common/v1/node.proto";
+import "blockjoy/common/v1/config.proto";
+import "blockjoy/v1/node.proto";
 import "google/protobuf/timestamp.proto";
 
 message Command {
   // A unique command identifier.
-  string id = 1;
+  string command_id = 1;
   // A command may have an exit code.
   optional CommandExitCode exit_code = 2;
   // A command may have an outcome message.
@@ -29,15 +28,21 @@ message Command {
 
 // Commands to be executed on a host.
 service CommandService {
-  // Allows a user to retrieve a list of commands using a set of filter params.
-  rpc List(CommandServiceListRequest) returns (CommandServiceListResponse);
-  // Update the status of a command (only used by the host).
-  rpc Update(CommandServiceUpdateRequest) returns (CommandServiceUpdateResponse);
   // Acknowledge the reciept of a command.
   rpc Ack(CommandServiceAckRequest) returns (CommandServiceAckResponse);
+  // Allows a user to retrieve a list of commands using a set of filter params.
+  rpc List(CommandServiceListRequest) returns (CommandServiceListResponse);
   // Get a list of unacknowledged commands.
   rpc Pending(CommandServicePendingRequest) returns (CommandServicePendingResponse);
+  // Update the status of a command (only used by the host).
+  rpc Update(CommandServiceUpdateRequest) returns (CommandServiceUpdateResponse);
 }
+
+message CommandServiceAckRequest {
+  string command_id = 1;
+}
+
+message CommandServiceAckResponse {}
 
 message CommandServiceListRequest {
   optional string node_id = 1;
@@ -49,23 +54,6 @@ message CommandServiceListResponse {
   repeated Command commands = 1;
 }
 
-message CommandServiceUpdateRequest {
-  string id = 1;
-  optional CommandExitCode exit_code = 2;
-  optional string exit_message = 3;
-  optional uint64 retry_hint_seconds = 4;
-}
-
-message CommandServiceUpdateResponse {
-  Command command = 1;
-}
-
-message CommandServiceAckRequest {
-  string id = 1;
-}
-
-message CommandServiceAckResponse {}
-
 message CommandServicePendingRequest {
   string host_id = 1;
   optional string filter_type = 2;
@@ -73,6 +61,17 @@ message CommandServicePendingRequest {
 
 message CommandServicePendingResponse {
   repeated Command commands = 1;
+}
+
+message CommandServiceUpdateRequest {
+  string command_id = 1;
+  optional CommandExitCode exit_code = 2;
+  optional string exit_message = 3;
+  optional uint64 retry_hint_seconds = 4;
+}
+
+message CommandServiceUpdateResponse {
+  Command command = 1;
 }
 
 message HostCommand {
@@ -97,19 +96,23 @@ message HostPending {}
 
 message NodeCommand {
   string node_id = 1;
-  string node_name = 10;
-  string host_id = 2;
-  string host_name = 11;
+  string node_name = 2;
+  string host_id = 3;
+  string host_name = 4;
 
   oneof command {
-    NodeCreate create = 3;
-    NodeStart start = 4;
-    NodeStop stop = 5;
-    NodeRestart restart = 6;
-    NodeUpgrade upgrade = 7;
-    NodeUpdate update = 8;
-    NodeDelete delete = 9;
+    NodeCreate create = 5;
+    NodeStart start = 6;
+    NodeStop stop = 7;
+    NodeRestart restart = 8;
+    NodeUpdate update = 9;
+    NodeUpgrade upgrade = 10;
+    NodeDelete delete = 11;
   }
+}
+
+message NodeCreate {
+  Node node = 1;
 }
 
 message NodeStart {}
@@ -118,33 +121,19 @@ message NodeStop {}
 
 message NodeRestart {}
 
-// Upgrade a node to a new image.
-message NodeUpgrade {
-  blockjoy.common.v1.ImageIdentifier image = 1;
-}
-
 message NodeUpdate {
-  repeated blockjoy.common.v1.FirewallRule rules = 1;
-  string org_id = 2;
+  string node_id = 1;
+  optional bool auto_upgrade = 2;
+  optional string new_org_id = 3;
+  optional string new_org_name = 4;
+  optional string new_display_name = 5;
+  optional string new_note = 6;
+  repeated blockjoy.common.v1.ImagePropertyValue new_changes = 7;
+  optional blockjoy.common.v1.FirewallConfig new_firewall = 8;
 }
 
-message NodeCreate {
-  string node_name = 1;
-  string dns_name = 2;
-  string org_id = 3;
-  string blockchain = 4;
-  blockjoy.common.v1.ImageIdentifier image = 5;
-  blockjoy.common.v1.NodeType node_type = 6;
-  string ip = 7;
-  string gateway = 8;
-  repeated Parameter properties = 9;
-  repeated blockjoy.common.v1.FirewallRule rules = 10;
-  string network = 11;
-}
-
-message Parameter {
-  string name = 1;
-  string value = 2;
+message NodeUpgrade {
+  Node node = 1;
 }
 
 message NodeDelete {}

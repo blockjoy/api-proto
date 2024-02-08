@@ -1,0 +1,238 @@
+syntax = "proto3";
+
+package blockjoy.v1;
+
+import "blockjoy/common/v1/currency.proto";
+import "blockjoy/common/v1/protocol.proto";
+import "blockjoy/common/v1/search.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+message Protocol {
+  string protocol_id = 1;
+  optional string org_id = 2;
+  string key = 3;
+  string name = 4;
+  optional string description = 5;
+  optional string ticker = 6;
+  blockjoy.common.v1.Visibility visibility = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  repeated ProtocolVersion versions = 10;
+}
+
+message ProtocolVersion {
+  string protocol_version_id = 1;
+  optional string org_id = 2;
+  string protocol_id = 3;
+  blockjoy.common.v1.ProtocolVersionKey version_key = 4;
+  string semantic_version = 5;
+  string sku_code = 6;
+  optional string description = 7;
+  blockjoy.common.v1.Visibility visibility = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+// Service for managing deployable protocols.
+service ProtocolService {
+  // Add new deployable protocol.
+  rpc AddProtocol(ProtocolServiceAddProtocolRequest) returns (ProtocolServiceAddProtocolResponse);
+  // Add a new version to existing protocol.
+  rpc AddVersion(ProtocolServiceAddVersionRequest) returns (ProtocolServiceAddVersionResponse);
+  // Get the latest protocol version.
+  rpc GetLatest(ProtocolServiceGetLatestRequest) returns (ProtocolServiceGetLatestResponse);
+  // Get the instance pricing for some protocol.
+  rpc GetPricing(ProtocolServiceGetPricingRequest) returns (ProtocolServiceGetPricingResponse);
+  // Get info about some protocol.
+  rpc GetProtocol(ProtocolServiceGetProtocolRequest) returns (ProtocolServiceGetProtocolResponse);
+  // Get stats for some protocol.
+  rpc GetStats(ProtocolServiceGetStatsRequest) returns (ProtocolServiceGetStatsResponse);
+  // List all deployable protocols.
+  rpc ListProtocols(ProtocolServiceListProtocolsRequest) returns (ProtocolServiceListProtocolsResponse);
+  // List all versions for some version key.
+  rpc ListVersions(ProtocolServiceListVersionsRequest) returns (ProtocolServiceListVersionsResponse);
+  // Update existing protocol metadata.
+  rpc UpdateProtocol(ProtocolServiceUpdateProtocolRequest) returns (ProtocolServiceUpdateProtocolResponse);
+  // Update existing protocol version metadata.
+  rpc UpdateVersion(ProtocolServiceUpdateVersionRequest) returns (ProtocolServiceUpdateVersionResponse);
+}
+
+message ProtocolServiceAddProtocolRequest {
+  // Whether this is public or org-specific protocol.
+  optional string org_id = 1;
+  // The lookup key for this protocol.
+  string key = 2;
+  // The display name for this protocol.
+  string name = 3;
+  // A readable description of this protocol.
+  optional string description = 4;
+  // The ticker symbol for blockchain protocols (e.g. ETH).
+  optional string ticker = 5;
+}
+
+message ProtocolServiceAddProtocolResponse {
+  Protocol protocol = 1;
+}
+
+message ProtocolServiceAddVersionRequest {
+  // Whether this is a public or org-specific version.
+  optional string org_id = 1;
+  // The lookup key of this version.
+  blockjoy.common.v1.ProtocolVersionKey version_key = 2;
+  // A semantic version of the protocol software.
+  string semantic_version = 3;
+  // The SKU code for this version (e.g. ETH-MN).
+  string sku_code = 4;
+  // A readable description of this protocol version.
+  optional string description = 5;
+}
+
+message ProtocolServiceAddVersionResponse {
+  ProtocolVersion version = 1;
+}
+
+message ProtocolServiceGetLatestRequest {
+  // The version key to get the latest version of.
+  blockjoy.common.v1.ProtocolVersionKey version_key = 1;
+  // The org id for org-specific protocols or versions.
+  optional string org_id = 2;
+}
+
+message ProtocolServiceGetLatestResponse {
+  ProtocolVersion protocol_version = 1;
+}
+
+message ProtocolServiceGetPricingRequest {
+  // The version key to get the pricing for.
+  blockjoy.common.v1.ProtocolVersionKey version_key = 1;
+  // The org id for org-specific protocols or versions.
+  optional string org_id = 2;
+  // The region to request an instance for.
+  string region = 3;
+}
+
+message ProtocolServiceGetPricingResponse {
+  blockjoy.common.v1.BillingAmount billing_amount = 1;
+}
+
+message ProtocolServiceGetProtocolRequest {
+  oneof protocol {
+    // The protocol id to retrieve.
+    string protocol_id = 1;
+    // The protocol key to retrieve.
+    string protocol_key = 2;
+  }
+  // The org id for org-specific protocols.
+  optional string org_id = 3;
+}
+
+message ProtocolServiceGetProtocolResponse {
+  Protocol protocol = 1;
+}
+
+message ProtocolServiceGetStatsRequest {
+  // The org id for org-specific protocols or versions.
+  optional string org_id = 1;
+  oneof stats_for {
+    // Get stats for some protocol.
+    string protocol_id = 2;
+    // Get stats for some protocol version.
+    string protocol_version_id = 3;
+    // Get stats for all protocols;
+    google.protobuf.Empty all_protocols = 4;
+    // Get stats for all protocol versions;
+    google.protobuf.Empty all_versions = 5;
+  }
+}
+
+message ProtocolServiceGetStatsResponse {
+  // Map from protocol_id to stats for that protocol;
+  map<string, NodeStats> protocol_stats = 1;
+  // Map from protocol_version_id to stats for that version;
+  map<string, NodeStats> version_stats = 2;
+}
+
+message NodeStats {
+  uint64 total = 1;
+  uint64 starting = 2;
+  uint64 running = 3;
+  uint64 upgrading = 4;
+  uint64 failed = 5;
+}
+
+message ProtocolServiceListProtocolsRequest {
+  // List public protocols, plus any belonging to these orgs.
+  repeated string org_ids = 1;
+  // The number of results to skip.
+  uint64 offset = 2;
+  // Limit the number of results.
+  uint64 limit = 3;
+  // Search these parameters.
+  optional ProtocolSearch search = 8;
+  // Sort the results in this order.
+  repeated ProtocolSort sort = 9;
+}
+
+message ProtocolSearch {
+  blockjoy.common.v1.SearchOperator operator = 1;
+  optional string protocol_id = 2;
+  optional string name = 3;
+}
+
+message ProtocolSort {
+  ProtocolSortField field = 1;
+  blockjoy.common.v1.SortOrder order = 2;
+}
+
+enum ProtocolSortField {
+  PROTOCOL_SORT_FIELD_UNSPECIFIED = 0;
+  PROTOCOL_SORT_FIELD_KEY = 1;
+  PROTOCOL_SORT_FIELD_NAME = 2;
+}
+
+message ProtocolServiceListProtocolsResponse {
+  repeated Protocol protocols = 1;
+  optional string start_cursor = 2;
+}
+
+message ProtocolServiceListVersionsRequest {
+  // The version key to list the versions of.
+  blockjoy.common.v1.ProtocolVersionKey version_key = 1;
+  // The org id for org-specific protocols or versions.
+  optional string org_id = 2;
+}
+
+message ProtocolServiceListVersionsResponse {
+  repeated ProtocolVersion protocol_versions = 1;
+}
+
+message ProtocolServiceUpdateProtocolRequest {
+  // The protocol id to update.
+  string protocol_id = 1;
+  // Update the name.
+  optional string name = 2;
+  // Update the description.
+  optional string description = 3;
+  // Update the visibility.
+  optional blockjoy.common.v1.Visibility visibility = 4;
+}
+
+message ProtocolServiceUpdateProtocolResponse {
+  Protocol protocol = 1;
+}
+
+message ProtocolServiceUpdateVersionRequest {
+  // The protocol version id to update.
+  string protocol_version_id = 1;
+  // Update the SKU code.
+  optional string sku_code = 2;
+  // Update the description.
+  optional string description = 3;
+  // Update the visibility.
+  optional blockjoy.common.v1.Visibility visibility = 4;
+}
+
+message ProtocolServiceUpdateVersionResponse {
+  ProtocolVersion protocol_version = 1;
+}
