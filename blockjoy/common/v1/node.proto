@@ -2,24 +2,6 @@ syntax = "proto3";
 
 package blockjoy.common.v1;
 
-// All possible node types.
-enum NodeType {
-  NODE_TYPE_UNSPECIFIED = 0;
-  NODE_TYPE_MINER = 1;
-  NODE_TYPE_ETL = 2;
-  NODE_TYPE_VALIDATOR = 3;
-  NODE_TYPE_API = 4;
-  NODE_TYPE_ORACLE = 5;
-  NODE_TYPE_RELAY = 6;
-  NODE_TYPE_EXECUTION = 7;
-  NODE_TYPE_BEACON = 8;
-  NODE_TYPE_MEVBOOST = 9;
-  NODE_TYPE_NODE = 10;
-  NODE_TYPE_FULLNODE = 11;
-  NODE_TYPE_LIGHTNODE = 12;
-  NODE_TYPE_ARCHIVE = 13;
-}
-
 // Non-chain specific node states.
 enum NodeStatus {
   NODE_STATUS_UNSPECIFIED = 0;
@@ -94,19 +76,4 @@ enum StakingStatus {
   STAKING_STATUS_VALIDATING = 4;
   STAKING_STATUS_CONSENSUS = 5;
   STAKING_STATUS_UNSTAKED = 6;
-}
-
-// Field properties for displaying in the UI.
-enum UiType {
-  UI_TYPE_UNSPECIFIED = 0;
-  // Either "true" or "false" must be returned. The property should be rendered
-  // as a checkbox.
-  UI_TYPE_SWITCH = 1;
-  // This field should be treated as a password field, i.e. a text field whose
-  // content is hidden.
-  UI_TYPE_PASSWORD = 2;
-  // This field should be treated as a text field.
-  UI_TYPE_TEXT = 3;
-  // This field should let the user upload string from a file.
-  UI_TYPE_FILE_UPLOAD = 4;
 }

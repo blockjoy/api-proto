@@ -58,11 +58,11 @@ message HostMetrics {
   // The amount of CPU that is currently in use. This is given as the sum of
   // percentages of each core that is used. Example: if there are 4 cores, and
   // each is at 78% usage, the number sent will be 312.
-  optional uint32 used_cpu = 1;
+  optional uint64 used_cpu_percent = 1;
   // This is the amount of memory used, given in bytes.
-  optional uint64 used_memory = 2;
+  optional uint64 used_mem_bytes = 2;
   // This is the amount of disk used, given in bytes.
-  optional uint64 used_disk_space = 3;
+  optional uint64 used_disk_bytes = 3;
   // This is the load during the last minute, given as a percentage. Example: if
   // the load given by top is `2.73, 2.96, 2.53`, then the value sent here will
   // be 2.73.

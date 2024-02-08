@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package blockjoy.v1;
 
+import "blockjoy/common/v1/blockchain.proto";
 import "blockjoy/common/v1/currency.proto";
-import "blockjoy/common/v1/node.proto";
 import "blockjoy/common/v1/search.proto";
 import "google/protobuf/timestamp.proto";
 
@@ -12,10 +12,9 @@ message Host {
   string id = 1;
   // This is the randomly generated name of the host.
   string name = 2;
-  // The version of the blockjoy control software running on the host.
-  string version = 3;
-  // The number of logical cores the machine has, _not_ the number of physical
-  // cores.
+  // The version of the blockvisor software running on the host.
+  string bv_version = 3;
+  // The number of logical (not physical) cores the machine has.
   uint64 cpu_count = 5;
   // The amount of physical memory the machine has.
   uint64 mem_size_bytes = 6;
@@ -27,8 +26,7 @@ message Host {
   string os_version = 9;
   // The ip address on which the machine is reachable.
   string ip = 10;
-  // The moment this host was created. Corresponds to the moment that the
-  // host_provision was
+  // The time this host was created.
   google.protobuf.Timestamp created_at = 12;
   // The lowest ip address that this host may assign to a node.
   string ip_range_from = 13;
@@ -85,7 +83,7 @@ message HostServiceCreateRequest {
   // A name to recognise the host by.
   string name = 2;
   // The version of the blockvisor software running on the host.
-  string version = 3;
+  string bv_version = 3;
   // The number of logical cores on this computer, _not_ the number of physical
   // cores.
   uint64 cpu_count = 4;
@@ -151,8 +149,8 @@ message HostSearch {
   optional string id = 2;
   // Search only for the name of the host.
   optional string name = 3;
-  // Search only for the version of the host.
-  optional string version = 4;
+  // Search only for the blockvisor version on the host.
+  optional string bv_version = 4;
   // Search only for the operating system.
   optional string os = 5;
   // Search only for the ip address.
@@ -168,7 +166,7 @@ enum HostSortField {
   HOST_SORT_FIELD_UNSPECIFIED = 0;
   HOST_SORT_FIELD_HOST_NAME = 1;
   HOST_SORT_FIELD_CREATED_AT = 2;
-  HOST_SORT_FIELD_VERSION = 3;
+  HOST_SORT_FIELD_BV_VERSION = 3;
   HOST_SORT_FIELD_OS = 4;
   HOST_SORT_FIELD_OS_VERSION = 5;
   HOST_SORT_FIELD_CPU_COUNT = 6;
@@ -186,7 +184,7 @@ message HostServiceListResponse {
 message HostServiceUpdateRequest {
   string id = 1;
   optional string name = 2;
-  optional string version = 3;
+  optional string bv_version = 3;
   optional string os = 5;
   optional string os_version = 6;
   // The region of the host.
@@ -225,19 +223,11 @@ message HostServiceDeleteRequest {
 
 message HostServiceDeleteResponse {}
 
-// Used to produce a list of regions that are available to deploy nodes to.
 message HostServiceRegionsRequest {
-  // The org for which to produce the list. This field is required for users
-  // that are not administrators of the whole system.
-  optional string org_id = 1;
-  // The type of host to include in this list.
-  optional HostType host_type = 2;
-  // The id of the blockchain that should be ran inside the node.
-  string blockchain_id = 3;
-  // The version of the node software that is ran.
-  string version = 4;
-  // The type of node that you want to create.
-  blockjoy.common.v1.NodeType node_type = 5;
+  string image_id = 1;
+  optional string org_id = 2;
+  HostType host_type = 3;
+  blockjoy.common.v1.NodeType node_type = 4;
 }
 
 message HostServiceRegionsResponse {
