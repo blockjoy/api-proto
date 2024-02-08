@@ -2,72 +2,34 @@ syntax = "proto3";
 
 package blockjoy.common.v1;
 
-import "blockjoy/common/v1/firewall.proto";
-import "blockjoy/common/v1/image.proto";
-
-message BlockchainMetadata {
-  // Blockchain image identifier.
-  ImageIdentifier image = 1;
-  // The Linux kernel version used in VM.
-  string kernel = 2;
-  // A description of the image.
-  optional string description = 3;
-  // Blockchain hardware requirements.
-  HardwareRequirements requirements = 4;
-  // Supported blockchain networks.
-  map<string, NetworkConfig> networks = 5;
-  // The minimum semver of the babel program that a script is compatible with.
-  string min_babel_version = 6;
-  // Babel agent configuration.
-  BabelConfig babel_config = 7;
-  // Node firewall configuration.
-  FirewallConfig firewall = 8;
+// The set of supported blockchain node types.
+enum NodeType {
+  NODE_TYPE_UNSPECIFIED = 0;
+  NODE_TYPE_RPC = 1;
 }
 
-message HardwareRequirements {
-  // Number of virtual cores in the VM.
-  uint32 vcpu_count = 1;
-  // RAM allocated to VM (in MB).
-  uint64 mem_size_mb = 2;
-  // Size of data drive for storing blockchain data (in GB).
-  uint64 disk_size_gb = 3;
+// The type of field to display in the UI.
+enum UiType {
+  UI_TYPE_UNSPECIFIED = 0;
+  // A checkbox in the UI (type: boolean)
+  UI_TYPE_SWITCH = 1;
+  // A text field in the UI (type: utf-8 string).
+  UI_TYPE_TEXT = 2;
+  // A text field with hidden content in the UI (type: utf-8 string).
+  UI_TYPE_PASSWORD = 3;
+  // A set of allowed values (type: enum).
+  UI_TYPE_ENUM = 4;
 }
 
-message NetworkConfig {
-  // The name of this network config.
-  string name = 1;
-  // Url for given blockchain network.
-  string url = 2;
-  // Blockchain network type.
-  NetType net_type = 3;
-  // Custom network metadata.
-  map<string, string> metadata = 4;
+// The visibility of a blockchain or image.
+enum Visibility {
+  VISIBILITY_UNSPECIFIED = 0;
+  VISIBILITY_PRIVATE = 1;
+  VISIBILITY_PUBLIC = 2;
+  VISIBILITY_DEVELOPMENT = 3;
 }
 
-// The blockchain network type.
-enum NetType {
-  NET_TYPE_UNSPECIFIED = 0;
-  NET_TYPE_DEV = 1;
-  NET_TYPE_TEST = 2;
-  NET_TYPE_MAIN = 3;
-}
-
-message BabelConfig {
-  // Path to mount data drive to.
-  string data_directory_mount_point = 1;
-  // Log buffer capacity in lines.
-  optional uint64 log_buffer_lines = 2;
-  // Size of swap file created on the node (in MB).
-  optional uint64 swap_size_mb = 3;
-  // Location of swap file.
-  optional string swap_file_location = 4;
-  // RAM disks configuration.
-  repeated RamdiskConfig ramdisks = 5;
-}
-
-message RamdiskConfig {
-  // Path to mount RAM disk to.
-  string ram_disk_mount_point = 1;
-  // RAM disk size (in MB).
-  uint64 ram_disk_size_mb = 2;
+// A URL pointing to archive data.
+message ArchiveLocation {
+  string url = 1;
 }

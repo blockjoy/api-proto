@@ -1,0 +1,161 @@
+syntax = "proto3";
+
+package blockjoy.v1;
+
+import "blockjoy/common/v1/blockchain.proto";
+import "blockjoy/common/v1/config.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+// The base image for a blockchain version.
+message Image {
+  string id = 1;
+  string blockchain_version_id = 2;
+  optional string org_id = 3;
+  uint64 build_version = 4;
+  string kernel_version = 5;
+  optional string description = 6;
+  blockjoy.common.v1.Visibility visibility = 7;
+  repeated ImageProperty properties = 8;
+  repeated blockjoy.common.v1.FirewallRule firewall_rules = 9;
+  blockjoy.common.v1.FirewallAction default_firewall_in = 10;
+  blockjoy.common.v1.FirewallAction default_firewall_out = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+  int64 min_cpu = 14;
+  int64 min_memory_bytes = 15;
+  int64 min_disk_bytes = 16;
+  optional bytes babel_plugin = 17;
+}
+
+// A config property of an image.
+message ImageProperty {
+  string id = 1;
+  // The applicable image for this property.
+  string image_id = 2;
+  // The lookup key for this property.
+  string key = 3;
+  // A readable description of this property.
+  optional string description = 4;
+  // Whether a value for this property is required.
+  bool required = 5;
+  // Whether using this property requires different archive data.
+  bool new_archive = 6;
+  // A default value for this property.
+  optional string default_value = 7;
+  // How this field should be displayed in the UI.
+  blockjoy.common.v1.UiType ui_type = 8;
+  // Additional CPU needed when using this property.
+  optional int64 add_cpu = 10;
+  // Additional memory needed when using this property.
+  optional int64 add_memory_bytes = 11;
+  // Additional disk needed when using this property.
+  optional int64 add_disk_bytes = 12;
+}
+
+// An identifier to archive data in external storage.
+message Archive {
+  string id = 1;
+  string image_id = 2;
+  string store_id = 3;
+  repeated string image_property_ids = 4;
+}
+
+// Service for working with blockchain images.
+service ImageService {
+  // Create a new image and set of properties for a blockchain version.
+  rpc AddImage(ImageServiceAddImageRequest) returns (ImageServiceAddImageResponse);
+  // Get image info for some protocol and node type.
+  rpc GetImage(ImageServiceGetImageRequest) returns (ImageServiceGetImageResponse);
+  // List all image archives for some image.
+  rpc ListArchives(ImageServiceListArchivesRequest) returns (ImageServiceListArchivesResponse);
+  // Update the storage location of an image archive.
+  rpc UpdateArchive(ImageServiceUpdateArchiveRequest) returns (ImageServiceUpdateArchiveResponse);
+  // Update the config of an existing image.
+  rpc UpdateImage(ImageServiceUpdateImageRequest) returns (ImageServiceUpdateImageResponse);
+}
+
+message ImageServiceAddImageRequest {
+  string blockchain_version_id = 1;
+  optional string org_id = 2;
+  string kernel_version = 3;
+  optional string description = 4;
+  int64 min_cpu = 5;
+  int64 min_memory_bytes = 6;
+  int64 min_disk_bytes = 7;
+  oneof properties {
+    google.protobuf.Empty last_properties = 8;
+    NewImageProperties new_properties = 9;
+  }
+  blockjoy.common.v1.FirewallAction default_firewall_in = 10;
+  blockjoy.common.v1.FirewallAction default_firewall_out = 11;
+  oneof firewall_rules {
+    google.protobuf.Empty last_rules = 12;
+    NewFirewallRules new_rules = 13;
+  }
+  optional bytes babel_plugin = 14;
+}
+
+message NewImageProperties {
+  repeated NewImageProperty properties = 1;
+}
+
+message NewImageProperty {
+  string key = 1;
+  optional string description = 2;
+  bool required = 3;
+  bool new_archive = 4;
+  optional string default_value = 5;
+  blockjoy.common.v1.UiType ui_type = 6;
+  optional int64 add_cpu = 7;
+  optional int64 add_memory_bytes = 8;
+  optional int64 add_disk_bytes = 9;
+}
+
+message NewFirewallRules {
+  repeated blockjoy.common.v1.FirewallRule rules = 1;
+}
+
+message ImageServiceAddImageResponse {
+  Image image = 1;
+  repeated Archive archives = 2;
+}
+
+message ImageServiceGetImageRequest {
+  string blockchain_id = 1;
+  optional string org_id = 2;
+  blockjoy.common.v1.NodeType node_type = 3;
+  optional string protocol_version = 4;
+  optional uint64 build_version = 5;
+}
+
+message ImageServiceGetImageResponse {
+  Image image = 1;
+}
+
+message ImageServiceListArchivesRequest {
+  string image_id = 1;
+  optional string org_id = 2;
+}
+
+message ImageServiceListArchivesResponse {
+  repeated Archive archives = 1;
+}
+
+message ImageServiceUpdateArchiveRequest {
+  string archive_id = 1;
+  optional string store_id = 2;
+}
+
+message ImageServiceUpdateArchiveResponse {
+  Archive archive = 1;
+}
+
+message ImageServiceUpdateImageRequest {
+  string image_id = 1;
+  optional blockjoy.common.v1.Visibility visibility = 2;
+}
+
+message ImageServiceUpdateImageResponse {
+  Image image = 1;
+}
