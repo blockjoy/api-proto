@@ -2,14 +2,12 @@ syntax = "proto3";
 
 package blockjoy.v1;
 
-import "blockjoy/common/v1/image.proto";
-
 // Manage VM kernels.
 service KernelService {
-  // Retrieve kernel for specific version.
+  // Retrieve the kernel url for some version.
   rpc Retrieve(KernelServiceRetrieveRequest) returns (KernelServiceRetrieveResponse);
   // List all available kernel versions.
-  rpc ListKernelVersions(KernelServiceListKernelVersionsRequest) returns (KernelServiceListKernelVersionsResponse);
+  rpc ListVersions(KernelServiceListVersionsRequest) returns (KernelServiceListVersionsResponse);
 }
 
 message KernelServiceRetrieveRequest {
@@ -17,16 +15,16 @@ message KernelServiceRetrieveRequest {
 }
 
 message KernelServiceRetrieveResponse {
-  blockjoy.common.v1.ArchiveLocation location = 1;
+  string url = 1;
 }
 
-message KernelServiceListKernelVersionsRequest {}
+message KernelServiceListVersionsRequest {}
 
-message KernelServiceListKernelVersionsResponse {
-  repeated KernelIdentifier identifiers = 1;
+message KernelServiceListVersionsResponse {
+  repeated KernelIdentifier ids = 1;
 }
 
 message KernelIdentifier {
-  // The semantic version of the kernel version.
+  // The semantic version of the kernel.
   string version = 1;
 }
