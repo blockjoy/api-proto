@@ -1,0 +1,168 @@
+syntax = "proto3";
+
+package blockjoy.v1;
+
+import "blockjoy/common/v1/config.proto";
+import "blockjoy/common/v1/protocol.proto";
+import "google/protobuf/timestamp.proto";
+
+// An image build for some protocol version.
+message Image {
+  string image_id = 1;
+  string protocol_version_id = 2;
+  optional string org_id = 3;
+  uint64 build_version = 4;
+  string image_uri = 5;
+  optional string description = 6;
+  repeated ImageProperty properties = 7;
+  blockjoy.common.v1.FirewallConfig firewall = 8;
+  uint64 min_cpu = 9;
+  uint64 min_memory_bytes = 10;
+  uint64 min_disk_bytes = 11;
+  repeated blockjoy.common.v1.RamdiskConfig ramdisks = 12;
+  blockjoy.common.v1.Visibility visibility = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+}
+
+// A config property of an image.
+message ImageProperty {
+  string image_property_id = 1;
+  // The applicable image for this property.
+  string image_id = 2;
+  // The lookup key for this property (repeated to group switches and enums).
+  string key = 3;
+  // A readable description of this property.
+  optional string description = 4;
+  // Whether using this property requires different archive data.
+  bool new_archive = 5;
+  // For repeated key groups, one value must be the default.
+  optional bool key_default = 6;
+  // The default value for this property.
+  string default_value = 7;
+  // Whether the value may change at runtime.
+  bool dynamic_value = 8;
+  // How this field should be displayed in the UI.
+  blockjoy.common.v1.UiType ui_type = 9;
+  // Additional CPU needed when using this property.
+  optional int64 add_cpu = 10;
+  // Additional memory needed when using this property.
+  optional int64 add_memory_bytes = 11;
+  // Additional disk needed when using this property.
+  optional int64 add_disk_bytes = 12;
+}
+
+// An identifier to archive data in external storage.
+message Archive {
+  string archive_id = 1;
+  string image_id = 2;
+  string store_id = 3;
+  repeated string image_property_ids = 4;
+}
+
+// Service for managing protocol image builds.
+service ImageService {
+  // Create a new image and set of properties for a protocol version.
+  rpc AddImage(ImageServiceAddImageRequest) returns (ImageServiceAddImageResponse);
+  // Get image info for some protocol and node type.
+  rpc GetImage(ImageServiceGetImageRequest) returns (ImageServiceGetImageResponse);
+  // List all image archives for some image.
+  rpc ListArchives(ImageServiceListArchivesRequest) returns (ImageServiceListArchivesResponse);
+  // Update the storage location of an image archive.
+  rpc UpdateArchive(ImageServiceUpdateArchiveRequest) returns (ImageServiceUpdateArchiveResponse);
+  // Update the config of an existing image.
+  rpc UpdateImage(ImageServiceUpdateImageRequest) returns (ImageServiceUpdateImageResponse);
+}
+
+message ImageServiceAddImageRequest {
+  // The protocol version id to add this image to.
+  string protocol_version_id = 1;
+  // Whether this is a public or org-image version.
+  optional string org_id = 2;
+  // An identifier to where the image is stored.
+  string image_uri = 3;
+  // A readable description of this image.
+  optional string description = 4;
+  // The set of properties for configuring this image.
+  repeated AddImageProperty properties = 5;
+  // The firewall config for this image.
+  blockjoy.common.v1.FirewallConfig firewall = 6;
+  // The minimum CPU cores nodes for this image will launch with.
+  uint64 min_cpu = 7;
+  // The minimum memory nodes for this image will launch with.
+  uint64 min_memory_bytes = 8;
+  // The minimum disk space nodes for this image will launch with.
+  uint64 min_disk_bytes = 9;
+  // The set of attached ramdisks.
+  repeated blockjoy.common.v1.RamdiskConfig ramdisks = 10;
+}
+
+message AddImageProperty {
+  // The lookup key for this property (repeated to group switches and enums).
+  string key = 1;
+  // A readable description of this property.
+  optional string description = 2;
+  // Whether using this property requires different archive data.
+  bool new_archive = 3;
+  // The default value for this property.
+  string default_value = 4;
+  // For repeated key groups, one value must be the default.
+  optional bool key_default = 5;
+  // Whether the value may change at runtime.
+  bool dynamic_value = 6;
+  // How this field should be displayed in the UI.
+  blockjoy.common.v1.UiType ui_type = 7;
+  // Additional CPU needed when using this property.
+  optional int64 add_cpu = 8;
+  // Additional memory needed when using this property.
+  optional int64 add_memory_bytes = 9;
+  // Additional disk needed when using this property.
+  optional int64 add_disk_bytes = 10;
+}
+
+message ImageServiceAddImageResponse {
+  Image image = 1;
+  repeated Archive archives = 2;
+}
+
+message ImageServiceGetImageRequest {
+  // The version key to get the latest image of.
+  blockjoy.common.v1.ProtocolVersionKey version_key = 1;
+  // The org id for org-specific protocols, versions or images.
+  optional string org_id = 2;
+  // A semantic protocol version, or none for latest.
+  optional string semantic_version = 3;
+  // An image build version, or none for latest.
+  optional uint64 build_version = 4;
+}
+
+message ImageServiceGetImageResponse {
+  Image image = 1;
+}
+
+message ImageServiceListArchivesRequest {
+  string image_id = 1;
+  optional string org_id = 2;
+}
+
+message ImageServiceListArchivesResponse {
+  repeated Archive archives = 1;
+}
+
+message ImageServiceUpdateArchiveRequest {
+  string archive_id = 1;
+  optional string store_id = 2;
+}
+
+message ImageServiceUpdateArchiveResponse {
+  Archive archive = 1;
+}
+
+message ImageServiceUpdateImageRequest {
+  string image_id = 1;
+  optional blockjoy.common.v1.Visibility visibility = 2;
+}
+
+message ImageServiceUpdateImageResponse {
+  Image image = 1;
+}

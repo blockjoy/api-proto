@@ -3,59 +3,54 @@ syntax = "proto3";
 package blockjoy.v1;
 
 import "blockjoy/common/v1/currency.proto";
-import "blockjoy/common/v1/node.proto";
 import "blockjoy/common/v1/search.proto";
 import "blockjoy/common/v1/tag.proto";
 import "google/protobuf/timestamp.proto";
 
 message Host {
-  // This is the id of the host.
-  string id = 1;
-  // This is the randomly generated name of the host.
-  string name = 2;
-  // The version of the blockjoy control software running on the host.
-  string version = 3;
-  // The number of logical cores the machine has, _not_ the number of physical
-  // cores.
-  uint64 cpu_count = 5;
-  // The amount of physical memory the machine has.
-  uint64 mem_size_bytes = 6;
-  // The size of the physical disks the machine has.
-  uint64 disk_size_bytes = 7;
-  // The operating system running on the machine, i.e. "BSD" or "Linux".
-  string os = 8;
-  // The version of said operating system running on the host.
-  string os_version = 9;
-  // The ip address on which the machine is reachable.
-  string ip = 10;
-  // The moment this host was created. Corresponds to the moment that the
-  // host_provision was
-  google.protobuf.Timestamp created_at = 12;
-  // The ip gateway of this host.
-  string ip_gateway = 15;
-  // The organization that this host belongs to.
-  string org_id = 16;
+  // The id of the host.
+  string host_id = 1;
+  // The organization id this host belongs to.
+  string org_id = 2;
+  // The organization name this host belongs to.
+  string org_name = 3;
+  // The name of the host.
+  string name = 4;
+  // The version of blockvisor running on the host.
+  string bv_version = 5;
+  // The number of logical cores this host has.
+  uint64 cpu_count = 6;
+  // The amount of memory this host has.
+  uint64 mem_size_bytes = 7;
+  // The size of the disks this host has.
+  uint64 disk_size_bytes = 8;
+  // The host operating system.e. "BSD" or "Linux".
+  string os = 9;
+  // The version of the host operating system.
+  string os_version = 10;
+  // The IP address of this host
+  string ip = 11;
+  // The IP gateway for this host.
+  string ip_gateway = 12;
+  // IP addresses available to nodes running on this host.
+  repeated HostIpAddress ip_addresses = 13;
   // The number of nodes on this host.
-  uint64 node_count = 17;
-  // The name of the organization that this host belongs to.
-  string org_name = 18;
-  // The region of the host.
-  optional string region = 19;
+  uint64 node_count = 14;
+  // The region of this host.
+  optional string region = 15;
   // The optional billing amount for this host.
-  optional blockjoy.common.v1.BillingAmount billing_amount = 20;
-  // The root directory of the vmm, where all data related to the vmm is stored,
-  // i.e. config data, secrets, vm mountpoints. Usually this will be
-  // `/var/lib/blockvisor`.
-  optional string vmm_mountpoint = 21;
-  // A list of ip addresses available for this host.
-  repeated HostIpAddress ip_addresses = 22;
+  optional blockjoy.common.v1.BillingAmount billing_amount = 16;
+  // The root directory for all VM data.
+  optional string vmm_mountpoint = 17;
   // The entity that can make decisions on whether to run nodes on this host.
-  ManagedBy managed_by = 23;
-  // A list of tags that are attached to this host.
-  blockjoy.common.v1.Tags tags = 24;
+  ManagedBy managed_by = 18;
+  // A list of tags attached to this host.
+  blockjoy.common.v1.Tags tags = 19;
+  // When this host was created.
+  google.protobuf.Timestamp created_at = 20;
 }
 
-// Manage hosts.
+// Service for managing hosts.
 service HostService {
   // Create a single host.
   rpc Create(HostServiceCreateRequest) returns (HostServiceCreateResponse);
@@ -78,45 +73,38 @@ service HostService {
 }
 
 message HostServiceCreateRequest {
-  // Each user has a token within an organization that we use to identify which
-  // user created this organization.
+  // An org-user's provisioning token to create this host.
   string provision_token = 1;
-  // A name to recognise the host by.
+  // The display name of the host.
   string name = 2;
-  // The version of the blockvisor software running on the host.
-  string version = 3;
-  // The number of logical cores on this computer, _not_ the number of physical
-  // cores.
+  // The blockvisor version running on the host.
+  string bv_version = 3;
+  // The number of logical cores on this host.
   uint64 cpu_count = 4;
-  // The amount of memory that this computer has, in bytes.
+  // The amount of memory this host has (in bytes).
   uint64 mem_size_bytes = 5;
-  // The amount of storage that this computer has, in bytes.
+  // The amount of storage this host has (in bytes).
   uint64 disk_size_bytes = 6;
-  // The operating system running on this computer.
+  // The operating system this host is running.
   string os = 7;
-  // The version of said operating system.
+  // The operating system version.
   string os_version = 8;
+  // The IP address of this host.
   string ip_addr = 9;
-  string ip_gateway = 12;
-  // A list of ip addresses that the nodes running on this host will be allowed
-  // to use.
-  repeated string ips = 18;
-  // The organization that this host belongs to. This field _must_ be populated
-  // with the current organization id.
-  optional string org_id = 13;
+  // The IP gateway for this host.
+  string ip_gateway = 10;
+  // IP addresses available to nodes running on this host.
+  repeated string ips = 11;
   // The region of the host
-  optional string region = 14;
-  // Optionally set a billing amount for this host.
-  optional blockjoy.common.v1.BillingAmount billing_amount = 15;
-  // The root directory of the vmm, where all data related to the vmm is stored,
-  // i.e. config data, secrets, vm mountpoints. Usually this will be
-  // `/var/lib/blockvisor`.
-  optional string vmm_mountpoint = 16;
-  // The entity that can make decisions on whether to run nodes on this host. By
-  // default this value will be set to `Automatic`.
-  optional ManagedBy managed_by = 17;
-  // A list of tags that are attached to this host.
-  blockjoy.common.v1.Tags tags = 19;
+  optional string region = 12;
+  // The billing amount for this host.
+  optional blockjoy.common.v1.BillingAmount billing_amount = 13;
+  // The root directory for all VM data.
+  optional string vmm_mountpoint = 14;
+  // The entity that can make decisions on whether to run nodes on this host.
+  optional ManagedBy managed_by = 15;
+  // A list of tags attached to this host.
+  blockjoy.common.v1.Tags tags = 16;
 }
 
 message HostServiceCreateResponse {
@@ -126,7 +114,7 @@ message HostServiceCreateResponse {
 }
 
 message HostServiceGetRequest {
-  string id = 1;
+  string host_id = 1;
 }
 
 message HostServiceGetResponse {
@@ -134,32 +122,32 @@ message HostServiceGetResponse {
 }
 
 message HostServiceListRequest {
+  // Only list hosts in these orgs.
   repeated string org_ids = 1;
-  // The version of the blockvisor software running on the host.
-  repeated string versions = 6;
-  // The number of items to be skipped over.
-  uint64 offset = 2;
-  // The number of items that will be returned. Together with offset, you can
-  // use this to get pagination.
-  uint64 limit = 3;
-  // Search params.
-  optional HostSearch search = 4;
-  // The field sorting order of results.
-  repeated HostSort sort = 5;
+  // Only list hosts running these blockvisor versions.
+  repeated string bv_versions = 2;
+  // The number of results to skip.
+  uint64 offset = 3;
+  // Limit the number of results.
+  uint64 limit = 4;
+  // Search these parameters.
+  optional HostSearch search = 5;
+  // Sort the results in this order.
+  repeated HostSort sort = 6;
 }
 
 message HostSearch {
-  // The way the search parameters should be combined.
+  // How to combine the parameters.
   blockjoy.common.v1.SearchOperator operator = 1;
-  // Search for the id of the host.
-  optional string id = 2;
-  // Search only for the name of the host.
+  // Search for this host id.
+  optional string host_id = 2;
+  // Search for this host name.
   optional string name = 3;
-  // Search only for the version of the host.
-  optional string version = 4;
-  // Search only for the operating system.
+  // Search for this blockvisor version.
+  optional string bv_version = 4;
+  // Search for this operating system.
   optional string os = 5;
-  // Search only for the ip address.
+  // Search for this ip address.
   optional string ip = 6;
 }
 
@@ -172,7 +160,7 @@ enum HostSortField {
   HOST_SORT_FIELD_UNSPECIFIED = 0;
   HOST_SORT_FIELD_HOST_NAME = 1;
   HOST_SORT_FIELD_CREATED_AT = 2;
-  HOST_SORT_FIELD_VERSION = 3;
+  HOST_SORT_FIELD_BV_VERSION = 3;
   HOST_SORT_FIELD_OS = 4;
   HOST_SORT_FIELD_OS_VERSION = 5;
   HOST_SORT_FIELD_CPU_COUNT = 6;
@@ -183,14 +171,13 @@ enum HostSortField {
 
 message HostServiceListResponse {
   repeated Host hosts = 1;
-  // The total number of hosts matching your query.
-  uint64 host_count = 2;
+  optional string start_cursor = 2;
 }
 
 message HostServiceUpdateRequest {
-  string id = 1;
+  string host_id = 1;
   optional string name = 2;
-  optional string version = 3;
+  optional string bv_version = 3;
   optional string os = 5;
   optional string os_version = 6;
   // The region of the host.
@@ -201,50 +188,40 @@ message HostServiceUpdateRequest {
   optional uint64 total_disk_space = 8;
   // The entity that can make decisions on whether to run nodes on this host.
   optional ManagedBy managed_by = 9;
-  // If this is provided, the tags contained in this will update the existing
-  // tags.
+  // If provided, update the existing host tags.
   optional blockjoy.common.v1.UpdateTags update_tags = 10;
 }
 
 message HostServiceUpdateResponse {}
 
 message HostServiceStartRequest {
-  string id = 1;
+  string host_id = 1;
 }
 
 message HostServiceStartResponse {}
 
 message HostServiceStopRequest {
-  string id = 1;
+  string host_id = 1;
 }
 
 message HostServiceStopResponse {}
 
 message HostServiceRestartRequest {
-  string id = 1;
+  string host_id = 1;
 }
 
 message HostServiceRestartResponse {}
 
 message HostServiceDeleteRequest {
-  string id = 1;
+  string host_id = 1;
 }
 
 message HostServiceDeleteResponse {}
 
-// Used to produce a list of regions that are available to deploy nodes to.
 message HostServiceRegionsRequest {
-  // The org for which to produce the list. This field is required for users
-  // that are not administrators of the whole system.
-  optional string org_id = 1;
-  // The type of host to include in this list.
-  optional HostType host_type = 2;
-  // The id of the blockchain that should be ran inside the node.
-  string blockchain_id = 3;
-  // The version of the node software that is ran.
-  string version = 4;
-  // The type of node that you want to create.
-  blockjoy.common.v1.NodeType node_type = 5;
+  string image_id = 1;
+  optional string org_id = 2;
+  HostType host_type = 3;
 }
 
 message HostServiceRegionsResponse {

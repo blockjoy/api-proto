@@ -3,89 +3,65 @@ syntax = "proto3";
 package blockjoy.v1;
 
 import "blockjoy/common/v1/node.proto";
-import "blockjoy/v1/node.proto";
 
-// A service for updating host and node metrics.
+// A service for sending host and node metrics.
 service MetricsService {
-  // Overwrite the metrics for the given nodes.
+  // Send the metrics for a set of nodes.
   rpc Node(MetricsServiceNodeRequest) returns (MetricsServiceNodeResponse);
-  // Overwrite the metrics for the given hosts.
+  // Send the metrics for a set of hosts.
   rpc Host(MetricsServiceHostRequest) returns (MetricsServiceHostResponse);
 }
 
-// This message is used to store the metrics for a given set of nodes.
+// Send metrics for a set of nodes.
 message MetricsServiceNodeRequest {
-  // This field maps the id of the node to the metrics that apply to that node.
+  // Mapping from the node id to node metrics.
   map<string, NodeMetrics> metrics = 1;
+}
+
+// The metrics for a node.
+message NodeMetrics {
+  // The current status of the node.
+  optional blockjoy.common.v1.NodeStatus node_status = 1;
+  // The current height of the blockchain.
+  optional uint64 height = 2;
+  // The age of the most recent block (in seconds).
+  optional uint64 block_age = 3;
+  // Whether the blockchain is in consensus.
+  optional bool consensus = 4;
+  // A list of jobs running on the node.
+  repeated blockjoy.common.v1.NodeJob jobs = 5;
 }
 
 message MetricsServiceNodeResponse {}
 
-// This message is used to store the metrics for a given set of hosts.
+// Send metrics for a set of hosts.
 message MetricsServiceHostRequest {
   // This field maps the id of the host to the metrics that apply to that host.
   map<string, HostMetrics> metrics = 1;
 }
 
-message MetricsServiceHostResponse {}
-
-// The metrics for a single `Node`. Note that there is no node id in this
-// message, because it is embedded in the `MetricsServiceNodeRequest`, where the
-// key of the map already is the id of the node.
-message NodeMetrics {
-  // This is the current height of the blockchain.
-  optional uint64 height = 1;
-  // This is the age of the most recent block, measured in seconds.
-  optional uint64 block_age = 2;
-  // This is the current staking status of the node.
-  optional blockjoy.common.v1.StakingStatus staking_status = 3;
-  // Iff the blockchain is in consensus, this field is `true`.
-  optional bool consensus = 4;
-  // This field represents the current status of the blockchain node
-  // application.
-  optional blockjoy.common.v1.NodeStatus application_status = 5;
-  // The status of the node with respect to the rest of the network, i.e.
-  // whether it is in sync with the other nodes.
-  optional blockjoy.common.v1.SyncStatus sync_status = 6;
-  // A list of the jobs that this node consists of.
-  repeated NodeJob jobs = 10;
-}
-
-// The metrics for a single `Host`. Note that there is no host id in this
-// message, because it is embedded in the `MetricsServiceHostRequest`, where the
-// key of the map already is the id of the host.
+// The metrics for a host.
 message HostMetrics {
-  // The amount of CPU that is currently in use. This is given as the sum of
-  // percentages of each core that is used. Example: if there are 4 cores, and
-  // each is at 78% usage, the number sent will be 312.
-  optional uint32 used_cpu = 1;
-  // This is the amount of memory used, given in bytes.
-  optional uint64 used_memory = 2;
-  // This is the amount of disk used, given in bytes.
-  optional uint64 used_disk_space = 3;
-  // This is the load during the last minute, given as a percentage. Example: if
-  // the load given by top is `2.73, 2.96, 2.53`, then the value sent here will
-  // be 2.73.
-  optional double load_one = 4;
-  // This is the load during the last five minutes, given as a percentage.
-  // Example: if the load given by top is `2.73, 2.96, 2.53`, then the value
-  // sent here will be 2.96.
-  optional double load_five = 5;
-  // This is the load during the last five minutes, given as a percentage.
-  // Example: if the load given by top is `2.73, 2.96, 2.53`, then the value
-  // sent here will be 2.53.
-  optional double load_fifteen = 6;
-  // This is the number of bytes (not bits) received over the network since the
-  // start of the host. This means that this value is going to increase
-  // monotonically when the host starts.
-  optional uint64 network_received = 7;
-  // This is the number of bytes (not bits) sent over the network since the
-  // start of the host. This means that this value is going to increase
-  // monotonically when the host starts.
-  optional uint64 network_sent = 8;
-  // This is the number of seconds that has elapsed since the host has started.
-  optional uint64 uptime = 9;
-  // This is the list of IPs already in use - that include all nodes created on host (those in dev mode too)
-  // or for any other purpose.
+  // The amount of CPU in use (in percent).
+  optional double used_cpu_percent = 1;
+  // The amount of memory in use (in bytes).
+  optional uint64 used_mem_bytes = 2;
+  // The amount of disk space used (in bytes).
+  optional uint64 used_disk_bytes = 3;
+  // The load during the last minute (in percent).
+  optional double load_one_percent = 4;
+  // The load during the last five minutes (in percent).
+  optional double load_five_percent = 5;
+  // The load during the last fifteen minutes (in percent).
+  optional double load_fifteen_percent = 6;
+  // The amount of network data received since the host was started (in bytes).
+  optional uint64 network_received_bytes = 7;
+  // The amount of network data sent since the host was started (in bytes).
+  optional uint64 network_sent_bytes = 8;
+  // The time since the host started (in seconds).
+  optional uint64 uptime_seconds = 9;
+  // A list of IPs in use by the host.
   repeated string used_ips = 10;
 }
+
+message MetricsServiceHostResponse {}

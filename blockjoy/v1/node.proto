@@ -2,198 +2,159 @@ syntax = "proto3";
 
 package blockjoy.v1;
 
+import "blockjoy/common/v1/config.proto";
 import "blockjoy/common/v1/node.proto";
+import "blockjoy/common/v1/protocol.proto";
 import "blockjoy/common/v1/resource.proto";
 import "blockjoy/common/v1/search.proto";
 import "blockjoy/common/v1/tag.proto";
 import "google/protobuf/timestamp.proto";
 
-// Blockchain node representation
 message Node {
-  string id = 1;
-  string org_id = 2;
-  string org_name = 3;
-  string host_id = 4;
-  string host_name = 5;
-  string host_org_id = 6;
-  string blockchain_id = 7;
-  string blockchain_name = 8;
-  string node_name = 9;
-  string dns_name = 10;
-  string display_name = 11;
-  // The P2P address of the node on the blockchain. This field is only set as
-  // the node is started, so therefore it is optional.
-  optional string address = 12;
-  string version = 13;
-  string ip = 14;
-  blockjoy.common.v1.NodeType node_type = 15;
-  repeated NodeProperty properties = 16;
-  optional uint64 block_height = 17;
-  google.protobuf.Timestamp created_at = 18;
-  google.protobuf.Timestamp updated_at = 19;
-  blockjoy.common.v1.NodeStatus status = 20;
-  blockjoy.common.v1.SyncStatus sync_status = 21;
-  blockjoy.common.v1.ContainerStatus container_status = 22;
-  optional blockjoy.common.v1.StakingStatus staking_status = 23;
-  string ip_gateway = 24;
-  bool self_update = 25;
-  string network = 26;
-  blockjoy.common.v1.EntityUpdate created_by = 27;
-  // A list of ip addresses allowed to access public ports on this node.
-  repeated FilteredIpAddr allow_ips = 28;
-  // A list of ip addresses denied all access to any ports on this node.
-  repeated FilteredIpAddr deny_ips = 29;
-  // Logic with regards to where the node should placed.
-  NodePlacement placement = 30;
-  // The place where the blockchain data directory should be mounted on the
-  // host.
-  optional string data_directory_mountpoint = 31;
-  // The running node on the host will consist of a couple of processes. These
-  // may individually start, stop and fail.
-  repeated NodeJob jobs = 33;
-  // A list of reports that have been created for this node.
-  repeated NodeReport reports = 34;
-  // A note you can use to explain what this node is for, or alternatively use
-  // as a shopping list.
-  optional string note = 35;
-  // If this is an rpc node, this field contains the url where rpc requests can
-  // be sent to.
-  string url = 36;
-  // Set if this node was recreated from an existing one.
-  optional string old_node_id = 37;
-  // A list of tags that are attached to this node.
-  blockjoy.common.v1.Tags tags = 38;
+  string node_id = 1;
+  string node_name = 2;
+  string display_name = 3;
+  optional string old_node_id = 4;
+  string image_id = 5;
+  string config_id = 6;
+  blockjoy.common.v1.NodeConfig config = 7;
+  string org_id = 8;
+  string org_name = 9;
+  string host_id = 10;
+  string host_name = 11;
+  string host_org_id = 12;
+  string protocol_id = 13;
+  string protocol_name = 14;
+  string protocol_version_id = 15;
+  blockjoy.common.v1.ProtocolVersionKey version_key = 16;
+  string semantic_version = 17;
+  bool auto_upgrade = 18;
+  string ip_address = 19;
+  string ip_gateway = 20;
+  string dns_name = 21;
+  optional string p2p_address = 22;
+  optional string dns_url = 23;
+  optional uint64 block_height = 24;
+  optional uint64 block_age = 25;
+  optional string note = 26;
+  blockjoy.common.v1.NodePlacement placement = 27;
+  blockjoy.common.v1.NodeStatus node_status = 28;
+  repeated blockjoy.common.v1.NodeJob jobs = 29;
+  repeated blockjoy.common.v1.NodeReport reports = 30;
+  blockjoy.common.v1.Tags tags = 31;
+  blockjoy.common.v1.EntityUpdate created_by = 32;
+  google.protobuf.Timestamp created_at = 33;
+  google.protobuf.Timestamp updated_at = 34;
 }
 
 // Service for interacting with a node.
 service NodeService {
-  // Create a single blockchain node.
+  // Create a new node.
   rpc Create(NodeServiceCreateRequest) returns (NodeServiceCreateResponse);
-  // Get single blockchain node.
+  // Get details for a node.
   rpc Get(NodeServiceGetRequest) returns (NodeServiceGetResponse);
-  // Get nodes belonging to org.
+  // List all nodes belonging to an org.
   rpc List(NodeServiceListRequest) returns (NodeServiceListResponse);
-  // Upgrade a node to a new version.
-  rpc Upgrade(NodeServiceUpgradeRequest) returns (NodeServiceUpgradeResponse);
-  // Update a single blockchain node configuration.
+  // Report the current status of a node.
+  rpc ReportStatus(NodeServiceReportStatusRequest) returns (NodeServiceReportStatusResponse);
+  // Report an error about this node.
+  rpc ReportError(NodeServiceReportErrorRequest) returns (NodeServiceReportErrorResponse);
+  // Update a node configuration.
   rpc UpdateConfig(NodeServiceUpdateConfigRequest) returns (NodeServiceUpdateConfigResponse);
-  // Update a single blockchain node status.
-  rpc UpdateStatus(NodeServiceUpdateStatusRequest) returns (NodeServiceUpdateStatusResponse);
-  // Start a single node.
+  // Upgrade a node to a new image.
+  rpc UpgradeImage(NodeServiceUpgradeImageRequest) returns (NodeServiceUpgradeImageResponse);
+  // Start a node.
   rpc Start(NodeServiceStartRequest) returns (NodeServiceStartResponse);
-  // Stop a single node.
+  // Stop a node.
   rpc Stop(NodeServiceStopRequest) returns (NodeServiceStopResponse);
-  // Restart a single node.
+  // Restart a node.
   rpc Restart(NodeServiceRestartRequest) returns (NodeServiceRestartResponse);
-  // Delete a single node.
+  // Delete a node.
   rpc Delete(NodeServiceDeleteRequest) returns (NodeServiceDeleteResponse);
-  // Create an error report about this host.
-  rpc Report(NodeServiceReportRequest) returns (NodeServiceReportResponse);
 }
 
-// This message is used to create a new node.
+// Create a new node for some image.
 message NodeServiceCreateRequest {
-  // Set when recreating a new node from an existing one.
-  optional string old_node_id = 1;
-  // The id of the organization for which the node should be created.
-  string org_id = 2;
-  // The id of the blockchain that should be ran inside the node.
-  string blockchain_id = 3;
-  // The version of the node software that is ran.
-  string version = 4;
-  // The type of node that you want to create.
-  blockjoy.common.v1.NodeType node_type = 5;
-  // A list of properties.
-  repeated NodeProperty properties = 6;
-  // The network that the blockchain will be a part of. Many blockchains have a
-  // dedicated test network, such as "goerli" for ethereum.
-  string network = 7;
-  // Logic with regards to where the node should placed.
-  NodePlacement placement = 8;
-  // A list of ip addresses allowed to access public ports on this node.
-  repeated FilteredIpAddr allow_ips = 9;
-  // A list of ip addresses denied all access to any ports on this node.
-  repeated FilteredIpAddr deny_ips = 10;
+  // The org id that is creating the node.
+  string org_id = 1;
+  // The image id of the node to create.
+  string image_id = 2;
+  // Recreate a new node with the config from an existing one.
+  optional string old_node_id = 3;
+  // How to determine the host placment of the new node.
+  blockjoy.common.v1.NodePlacement placement = 4;
+  // The image properties changed from their default values.
+  repeated blockjoy.common.v1.ImagePropertyValue changes = 5;
+  // Additional firewall rules to add to the node.
+  repeated blockjoy.common.v1.FirewallRule add_rules = 6;
   // A list of tags that are attached to this node.
-  optional blockjoy.common.v1.Tags tags = 11;
+  optional blockjoy.common.v1.Tags tags = 7;
 }
 
-// Message returned when a node is created.
 message NodeServiceCreateResponse {
-  // All nodes that were created.
   repeated Node nodes = 1;
 }
 
-// This message is used to read info about a single node. For requests
-// pertaining to multiple nodes, use `NodeServiceListRequest`.
 message NodeServiceGetRequest {
-  // This should be the UUID of the node that you want to query.
-  string id = 1;
+  string node_id = 1;
 }
 
 message NodeServiceGetResponse {
-  // The node that was queried will be placed in this field.
   Node node = 1;
 }
 
-// This request is used to query a set of nodes within an org by the parameters
-// that are specified in the `filter` field.
+// Query a set of nodes within an org.
 message NodeServiceListRequest {
-  // The organizations within which we will search for nodes.
+  // The orgs to list nodes for (or empty for all).
   repeated string org_ids = 1;
-  // The number of items to be skipped over.
+  // The number of results to skip.
   uint64 offset = 2;
-  // The number of items that will be returned. Together with offset, you can
-  // use this to get pagination.
+  // Limit the number of results.
   uint64 limit = 3;
-  // If this list is non-empty, only nodes that are any of these states will be
-  // returned.
-  repeated blockjoy.common.v1.NodeStatus statuses = 4;
-  // If this list is non-empty, only nodes of any of these types will be
-  // returned.
-  repeated blockjoy.common.v1.NodeType node_types = 5;
-  // If this list is non-empty, only nodes that run a blockchain identified by
-  // any of these blockchain ids will be returned.
-  repeated string blockchain_ids = 6;
-  // If this value is provided, only nodes running on these hosts are returned.
+  // Search these parameters.
+  optional NodeSearch search = 4;
+  // Sort the results in this order.
+  repeated NodeSort sort = 5;
+  // If non-empty, only return nodes for these protocol ids.
+  repeated string protocol_ids = 6;
+  // If non-empty, only return nodes running on these hosts.
   repeated string host_ids = 7;
-  // If this value is provided, only nodes created by these users are returned.
-  repeated string user_ids = 10;
-  // If this value is provided, only nodes with these ip addresses are returned.
+  // If non-empty, only return nodes created by these users.
+  repeated string user_ids = 8;
+  // If non-empty, only return nodes in these states.
+  repeated blockjoy.common.v1.NodeState node_states = 9;
+  // If non-empty, only return nodes with these next states.
+  repeated blockjoy.common.v1.NextState next_states = 10;
+  // If non-empty, only return nodes with these ip addresses.
   repeated string ip_addresses = 11;
-  // If this value is provided, only nodes with these versions are returned.
+  // If non-empty, only return nodes with these versions.
   repeated string versions = 12;
-  // If this value is provided, only nodes with these networks are returned.
-  repeated string networks = 13;
-  // If this value is provided, only nodes with these regions are returned.
-  repeated string regions = 14;
-  // If this value is provided, only nodes that are in this container status
-  // will be returned.
-  repeated blockjoy.common.v1.ContainerStatus container_statuses = 15;
-  // If this value is provided, only nodes that are in this sync status will be
-  // returned.
-  repeated blockjoy.common.v1.SyncStatus sync_statuses = 16;
-  // Search params.
-  optional NodeSearch search = 8;
-  // The field sorting order of results.
-  repeated NodeSort sort = 9;
+  // If non-empty, only return nodes in these regions.
+  repeated string regions = 13;
 }
 
-// This message contains fields used to search nodes as opposed to just
-// filtering them.
+// The fields used to search nodes rather than just filtering them.
 message NodeSearch {
-  // The way the search parameters should be combined.
+  // How to combine the parameters.
   blockjoy.common.v1.SearchOperator operator = 1;
   // Search for the node id.
-  optional string id = 2;
-  // Search for the node ip address.
-  optional string ip = 3;
+  optional string node_id = 2;
   // Search for the node name.
-  optional string node_name = 4;
+  optional string node_name = 3;
+  // Search for the display name.
+  optional string display_name = 4;
   // Search for the DNS name.
   optional string dns_name = 5;
-  // Search for the display name.
-  optional string display_name = 6;
+  // Search for the node state.
+  optional blockjoy.common.v1.NodeState node_state = 6;
+  // Search for the next state.
+  optional blockjoy.common.v1.NextState next_state = 7;
+  // Search for the protocol state.
+  optional string protocol_state = 8;
+  // Search for the protocol health.
+  optional string protocol_health = 9;
+  // Search for the node ip address.
+  optional string ip = 10;
 }
 
 message NodeSort {
@@ -205,69 +166,39 @@ enum NodeSortField {
   NODE_SORT_FIELD_UNSPECIFIED = 0;
   NODE_SORT_FIELD_HOST_NAME = 1;
   NODE_SORT_FIELD_NODE_NAME = 2;
-  NODE_SORT_FIELD_NODE_TYPE = 3;
-  NODE_SORT_FIELD_CREATED_AT = 4;
-  NODE_SORT_FIELD_UPDATED_AT = 5;
-  NODE_SORT_FIELD_NODE_STATUS = 6;
-  NODE_SORT_FIELD_SYNC_STATUS = 7;
-  NODE_SORT_FIELD_CONTAINER_STATUS = 8;
-  NODE_SORT_FIELD_STAKING_STATUS = 9;
-  NODE_SORT_FIELD_BLOCK_HEIGHT = 10;
-  NODE_SORT_FIELD_DNS_NAME = 11;
-  NODE_SORT_FIELD_DISPLAY_NAME = 12;
+  NODE_SORT_FIELD_NODE_STATE = 3;
+  NODE_SORT_FIELD_NEXT_STATE = 4;
+  NODE_SORT_FIELD_PROTOCOL_STATE = 5;
+  NODE_SORT_FIELD_PROTOCOL_HEALTH = 6;
+  NODE_SORT_FIELD_DNS_NAME = 7;
+  NODE_SORT_FIELD_DISPLAY_NAME = 8;
+  NODE_SORT_FIELD_BLOCK_HEIGHT = 9;
+  NODE_SORT_FIELD_CREATED_AT = 10;
+  NODE_SORT_FIELD_UPDATED_AT = 11;
 }
 
-// This response will contain all the filtered nodes.
+// This response contains the filtered nodes.
 message NodeServiceListResponse {
-  // The nodes that match the filter will be placed in this field.
   repeated Node nodes = 1;
-  // The total number of nodes matching your query.
-  uint64 node_count = 2;
+  optional string start_cursor = 2;
 }
 
-message NodeServiceUpgradeRequest {
-  // The ids of the nodes that you want to upgrade.
-  repeated string ids = 1;
-  // The version to upgrade the nodes to.
-  string version = 2;
+// Report the current status of a node.
+message NodeServiceReportStatusRequest {
+  // The id of the node to report.
+  string node_id = 1;
+  // The running config of the node.
+  string config_id = 2;
+  // Update the node status.
+  optional blockjoy.common.v1.NodeStatus status = 3;
+  // Update the peer-to-peer address.
+  optional string p2p_address = 4;
 }
 
-message NodeServiceUpgradeResponse {}
+message NodeServiceReportStatusResponse {}
 
-// This request is used for updating a node configuration.
-message NodeServiceUpdateConfigRequest {
-  // The ids of the nodes to update.
-  repeated string ids = 1;
-  // Whether or not the node software should update itself.
-  optional bool self_update = 2;
-  // If this field is specified, then the node is moved to this org.
-  optional string new_org_id = 3;
-  // A note you can use to explain what this node is for.
-  optional string note = 4;
-  // Update the frontend display name of this node.
-  optional string display_name = 5;
-  // If this is provided, the tags contained in this will update the existing
-  // tags.
-  optional blockjoy.common.v1.UpdateTags update_tags = 10;
-}
-
-message NodeServiceUpdateConfigResponse {}
-
-// This request is used for updating a node status.
-message NodeServiceUpdateStatusRequest {
-  // The ids of the nodes to update.
-  repeated string ids = 1;
-  // The version of the node image that is currently used.
-  optional string version = 2;
-  // Set the container status field to this value.
-  optional blockjoy.common.v1.ContainerStatus container_status = 3;
-  // Update the P2P address of the blockchain node.
-  optional string address = 4;
-}
-
-message NodeServiceUpdateStatusResponse {}
-
-message NodeServiceReportRequest {
+// Report an error with the node.
+message NodeServiceReportErrorRequest {
   // The id of the user that created the report.
   string user_id = 1;
   // The id of the node that this report pertains to.
@@ -276,177 +207,62 @@ message NodeServiceReportRequest {
   string message = 3;
 }
 
-message NodeServiceReportResponse {
-  string id = 1;
+message NodeServiceReportErrorResponse {
+  string report_id = 1;
 }
 
+message NodeServiceUpdateConfigRequest {
+  // The id of the node to update.
+  string node_id = 1;
+  // Whether the node should automatically be upgraded.
+  optional bool auto_upgrade = 2;
+  // Move this node to a new org.
+  optional string new_org_id = 3;
+  // Update the display name of this node.
+  optional string new_display_name = 4;
+  // Update the note that explains what this node is for.
+  optional string new_note = 5;
+  // Update these property keys to these values.
+  repeated blockjoy.common.v1.ImagePropertyValue new_changes = 6;
+  // Replace the firewall config with a new one.
+  optional blockjoy.common.v1.FirewallConfig new_firewall = 7;
+  // Update the node tags.
+  optional blockjoy.common.v1.UpdateTags update_tags = 8;
+}
+
+message NodeServiceUpdateConfigResponse {}
+
+message NodeServiceUpgradeImageRequest {
+  // The ids of the nodes that you want to upgrade.
+  repeated string node_ids = 1;
+  // The image_id to upgrade the nodes to.
+  string image_id = 2;
+  // The org_id of the image.
+  optional string org_id = 3;
+}
+
+message NodeServiceUpgradeImageResponse {}
+
 message NodeServiceStartRequest {
-  string id = 1;
+  string node_id = 1;
 }
 
 message NodeServiceStartResponse {}
 
 message NodeServiceStopRequest {
-  string id = 1;
+  string node_id = 1;
 }
 
 message NodeServiceStopResponse {}
 
 message NodeServiceRestartRequest {
-  string id = 1;
+  string node_id = 1;
 }
 
 message NodeServiceRestartResponse {}
 
 message NodeServiceDeleteRequest {
-  string id = 1;
+  string node_id = 1;
 }
 
 message NodeServiceDeleteResponse {}
-
-// Determines the placement of a new node.
-message NodePlacement {
-  oneof placement {
-    // The scheduler determines placement (see `NodeScheduler`).
-    NodeScheduler scheduler = 1;
-    // Use this host id (retrying on another host is disabled).
-    string host_id = 2;
-    // Batch create multiple nodes on these hosts.
-    MultipleNodes multiple = 3;
-  }
-}
-
-// A node scheduler controls the way that the node is placed onto an appropriate
-// host. There are two fields, each representing a possible method of selecting
-// a host for this node to be scheduled on. They are sorted by priority in
-// descending order, meaning that `similarity` takes precedence over `resource`.
-// The first field is required, in order to make sure that the way we schedule a
-// node is always defined.
-message NodeScheduler {
-  // Controls whether or not nodes of a similar type will be placed on the same
-  // host or, conversely, be spread out over many hosts. "Similar" is defined
-  // here as having the name `node_type`, `blockchain_id` and `org_id`. Note
-  // that `version` is ignored here, so that we don't interfere with clustering
-  // during when some of the nodes are upgraded, but others aren't yet.
-  enum SimilarNodeAffinity {
-    SIMILAR_NODE_AFFINITY_UNSPECIFIED = 0;
-    // Schedule nodes similar on the same host machine. This is useful for nodes
-    // that form groups with heavy intercommunication. Placing them on the same
-    // host machine will ensure the lowest possible network latency between
-    // them.
-    SIMILAR_NODE_AFFINITY_CLUSTER = 1;
-    // Avoid scheduling nodes on hosts that already have a similar node running
-    // on them. This is useful when multiple nodes are ran in parallel for the
-    // sake of redundancy. Spreading the nodes ensures that one host going down
-    // does not compromise other nodes.
-    SIMILAR_NODE_AFFINITY_SPREAD = 2;
-  }
-
-  // Controls whether nodes will prefer to be scheduled on the most utilized or
-  // the least utilized hosts first. This allows you to do breadth- or depth-
-  // first utilization of the available hosts.
-  enum ResourceAffinity {
-    RESOURCE_AFFINITY_UNSPECIFIED = 0;
-    // Prefer to utilize full hosts first.
-    RESOURCE_AFFINITY_MOST_RESOURCES = 1;
-    // Prefer to utilize empty hosts first.
-    RESOURCE_AFFINITY_LEAST_RESOURCES = 2;
-  }
-  // The way we want the node to react to hosts being full or empty.
-  ResourceAffinity resource = 1;
-  // The way we want the node to react to similar nodes being on a host.
-  optional SimilarNodeAffinity similarity = 2;
-  // The region where the node should be ran.
-  string region = 3;
-}
-
-message MultipleNodes {
-  repeated NodeCount node_counts = 1;
-}
-
-message NodeCount {
-  string host_id = 1;
-  uint32 node_count = 2;
-}
-
-// IP Addresses used to filter access.
-message FilteredIpAddr {
-  // The ip address used in this filter.
-  string ip = 1;
-  // A user's description of what/why this address is being filtered.
-  optional string description = 2;
-}
-
-message NodeProperty {
-  string name = 1;
-  string display_name = 6;
-  blockjoy.common.v1.UiType ui_type = 2;
-  bool disabled = 3;
-  bool required = 4;
-  string value = 5;
-}
-
-// A job is a process running on the host that is necessary for the operation of
-// a node. Examples here are downloading the chain data or running the
-// blockchain node process.
-message NodeJob {
-  // A name to identify this job by.
-  string name = 1;
-  // The status this job is currently in.
-  NodeJobStatus status = 2;
-  // If the process exited, then this field holds the unix-style exit code.
-  optional int32 exit_code = 3;
-  // A displayable message that the user might be able to read in order to
-  // further identify the current status of the job. For example, if the job has
-  // failed, an error message might be place here.
-  optional string message = 4;
-  // A list of log lines with information about the current job.
-  repeated string logs = 5;
-  // This field contains the number of restarts that as happened since the last
-  // cut-off. This is _not_ guaranteed to be the number of restarts that has
-  // happened since the creation of this node. Rather, this number may be reset
-  // to zero periodically, or whenever the job triggers the state `FINISHED`.
-  uint64 restarts = 6;
-  // This message contains a couple of fields that together denote the progress
-  // towards completion of this job.
-  optional NodeJobProgress progress = 7;
-}
-
-// Flags describing a job possible states.
-enum NodeJobStatus {
-  NODE_JOB_STATUS_UNSPECIFIED = 0;
-  // The job has not started yet.
-  NODE_JOB_STATUS_PENDING = 1;
-  // The job is current being executed.
-  NODE_JOB_STATUS_RUNNING = 2;
-  // The job has successfully finished.
-  NODE_JOB_STATUS_FINISHED = 3;
-  // The job has unsuccessfully finished.
-  NODE_JOB_STATUS_FAILED = 4;
-  // The job was interrupted.
-  NODE_JOB_STATUS_STOPPED = 5;
-}
-
-// This message indicates the amount of progress a job has made towards its
-// completion. Note that it is possible for a job to report an amount of
-// progress without it also providing a total.
-message NodeJobProgress {
-  // The total units of progress that need to be made in order to complete this
-  // job.
-  optional uint32 total = 1;
-  // The amount of units of progress that have been made towards the completion
-  // of this job.
-  optional uint32 current = 2;
-  // Any sort of message that is included with this job,
-  optional string message = 3;
-}
-
-message NodeReport {
-  string id = 1;
-  // The problem description.
-  string message = 2;
-  // The entity that created the report.
-  blockjoy.common.v1.EntityUpdate created_by = 3;
-  // The moment the issue was raised.
-  google.protobuf.Timestamp created_at = 4;
-}

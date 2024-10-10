@@ -42,7 +42,7 @@ message ApiKeyServiceListResponse {
 
 message ListApiKey {
   // The unique identifier to this api key.
-  optional string id = 1;
+  optional string api_key_id = 1;
   // The (non-unique) label for this api key.
   optional string label = 2;
   // The scope of this api key.
@@ -55,7 +55,7 @@ message ListApiKey {
 
 message ApiKeyServiceUpdateRequest {
   // The unique identifier to the api key to update.
-  string id = 1;
+  string api_key_id = 1;
   // The (non-unique) new label for this api key.
   optional string label = 2;
   // The new scope of this api key.
@@ -69,7 +69,7 @@ message ApiKeyServiceUpdateResponse {
 
 message ApiKeyServiceRegenerateRequest {
   // The unique identifier to the api key to regenerate.
-  string id = 1;
+  string api_key_id = 1;
 }
 
 message ApiKeyServiceRegenerateResponse {
@@ -81,7 +81,7 @@ message ApiKeyServiceRegenerateResponse {
 
 message ApiKeyServiceDeleteRequest {
   // The unique identifier to the api key to delete.
-  string id = 1;
+  string api_key_id = 1;
 }
 
 message ApiKeyServiceDeleteResponse {}

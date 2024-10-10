@@ -5,9 +5,8 @@ package blockjoy.v1;
 import "blockjoy/common/v1/search.proto";
 import "google/protobuf/timestamp.proto";
 
-// User representation.
 message User {
-  string id = 1;
+  string user_id = 1;
   string email = 2;
   string first_name = 3;
   string last_name = 4;
@@ -32,20 +31,16 @@ service UserService {
   rpc UpdateBilling(UserServiceUpdateBillingRequest) returns (UserServiceUpdateBillingResponse);
   // Remove the billing details of this user.
   rpc DeleteBilling(UserServiceDeleteBillingRequest) returns (UserServiceDeleteBillingResponse);
-
-  // Retrieve the `settings` for this user. This is a string -> string map that
-  // may be used by frontends to communicate those settings that are not used by
-  // the backend in between sessions and devices. This field is free-form and
-  // ignored by the backend.
+  // Retrieve the settings for a user.
   rpc GetSettings(UserServiceGetSettingsRequest) returns (UserServiceGetSettingsResponse);
-  // Modify a setting for this user.
+  // Modify a setting for a user.
   rpc UpdateSettings(UserServiceUpdateSettingsRequest) returns (UserServiceUpdateSettingsResponse);
-  // Reset delete a setting for this user.
+  // Delete a setting for a user.
   rpc DeleteSettings(UserServiceDeleteSettingsRequest) returns (UserServiceDeleteSettingsResponse);
 }
 
 message UserServiceGetRequest {
-  string id = 1;
+  string user_id = 1;
 }
 
 message UserServiceGetResponse {
@@ -53,33 +48,27 @@ message UserServiceGetResponse {
 }
 
 message UserServiceListRequest {
-  // Return only users from this org. This is required for users that do not
-  // have access to the entire system (i.e. blockjoy's admins).
+  // Return only users from this org.
   optional string org_id = 1;
-  // The number of items to be skipped over.
-  uint64 offset = 3;
-  // The number of items that will be returned. Together with offset, you can
-  // use this to get pagination.
-  uint64 limit = 4;
-  // Search params.
+  // The number of results to skip.
+  uint64 offset = 2;
+  // Limit the number of results.
+  uint64 limit = 3;
+  // Search these parameters.
   optional UserSearch search = 5;
-  // The field sorting order of results.
+  // Sort the results in this order.
   repeated UserSort sort = 6;
 }
 
-// This message contains fields used to search organizations as opposed to just
-// filtering them.
+// Search users by these fields.
 message UserSearch {
-  // The way the search parameters should be combined.
+  // How to combine the parameters.
   blockjoy.common.v1.SearchOperator operator = 1;
-  // Search only the id.
-  optional string id = 2;
-  // Return only users whose email has the provided pattern as a substring. Note
-  // that this search is not case sensitive. The wildcard symbol here is `'%'`.
-  // For example, a query for all users whose email starts with `baremetal`
-  // would look like `"baremetal%"`.
+  // Search for this user id.
+  optional string user_id = 2;
+  // Search for matching emails (case-insensitive and '%' is a wildcard).
   optional string email = 3;
-  // Search only the full name.
+  // Search for this full name.
   optional string name = 4;
 }
 
@@ -98,8 +87,7 @@ enum UserSortField {
 
 message UserServiceListResponse {
   repeated User users = 1;
-  // The total number of users matching your query.
-  uint64 user_count = 2;
+  optional string start_cursor = 2;
 }
 
 message UserServiceCreateRequest {
@@ -114,8 +102,7 @@ message UserServiceCreateResponse {
 }
 
 message UserServiceUpdateRequest {
-  // The id of the user to be updated.
-  string id = 1;
+  string user_id = 1;
   optional string first_name = 2;
   optional string last_name = 3;
 }
@@ -125,7 +112,7 @@ message UserServiceUpdateResponse {
 }
 
 message UserServiceDeleteRequest {
-  string id = 1;
+  string user_id = 1;
 }
 
 message UserServiceDeleteResponse {}
@@ -154,7 +141,6 @@ message UserServiceDeleteBillingRequest {
 message UserServiceDeleteBillingResponse {}
 
 message UserServiceGetSettingsRequest {
-  // The id of the user for which to return the settings.
   string user_id = 1;
 }
 
@@ -164,18 +150,18 @@ message UserServiceGetSettingsResponse {
 
 message UserServiceUpdateSettingsRequest {
   string user_id = 1;
-  string name = 2;
+  string key = 2;
   bytes value = 3;
 }
 
 message UserServiceUpdateSettingsResponse {
-  string name = 1;
+  string key = 1;
   bytes value = 2;
 }
 
 message UserServiceDeleteSettingsRequest {
   string user_id = 1;
-  string name = 2;
+  string key = 2;
 }
 
 message UserServiceDeleteSettingsResponse {}

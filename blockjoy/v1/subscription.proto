@@ -3,7 +3,7 @@ syntax = "proto3";
 package blockjoy.v1;
 
 message Subscription {
-  string id = 1;
+  string subscription_id = 1;
   string org_id = 2;
   string user_id = 3;
   string external_id = 4;
@@ -56,7 +56,7 @@ message SubscriptionServiceUpdateRequest {
 message SubscriptionServiceUpdateResponse {}
 
 message SubscriptionServiceDeleteRequest {
-  string id = 1;
+  string subscription_id = 1;
 }
 
 message SubscriptionServiceDeleteResponse {}
